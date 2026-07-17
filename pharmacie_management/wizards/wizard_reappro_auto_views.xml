@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_wizard_reappro_auto_form" model="ir.ui.view">
+        <field name="name">wizard.reappro.auto.form</field>
+        <field name="model">wizard.reappro.auto</field>
+        <field name="arch" type="xml">
+            <form string="Réapprovisionnement automatique">
+                <group>
+                    <field name="nb_alertes" readonly="1"/>
+                </group>
+                <field name="ligne_ids">
+                    <list editable="bottom">
+                        <field name="selectionne" widget="boolean_toggle"/>
+                        <field name="medicament_id" readonly="1"/>
+                        <field name="fournisseur_id" readonly="1"/>
+                        <field name="stock_actuel" readonly="1"/>
+                        <field name="alerte_rupture" readonly="1"/>
+                        <field name="quantite_suggeree"/>
+                    </list>
+                </field>
+                <footer>
+                    <button name="action_generer_bons"
+                            string="Générer les bons de commande"
+                            type="object" class="btn-primary"/>
+                    <button string="Fermer" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_wizard_reappro_auto" model="ir.actions.act_window">
+        <field name="name">Réapprovisionnement automatique</field>
+        <field name="res_model">wizard.reappro.auto</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

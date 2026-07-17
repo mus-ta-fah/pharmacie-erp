@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Rapport 1 : Ticket de caisse -->
+    <record id="action_report_ticket_caisse" model="ir.actions.report">
+        <field name="name">Ticket de caisse</field>
+        <field name="model">pharmacie.vente</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">pharmacie_management.report_ticket_caisse_template</field>
+        <field name="report_file">ticket_caisse</field>
+        <field name="binding_model_id" ref="model_pharmacie_vente"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- Rapport 2 : Inventaire des stocks -->
+    <record id="action_report_inventaire" model="ir.actions.report">
+        <field name="name">Inventaire des stocks</field>
+        <field name="model">pharmacie.lot</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">pharmacie_management.report_inventaire_template</field>
+        <field name="report_file">inventaire_stocks</field>
+        <field name="binding_model_id" ref="model_pharmacie_lot"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- Rapport 3 : Bilan de caisse (depuis wizard) -->
+    <record id="action_report_bilan_caisse" model="ir.actions.report">
+        <field name="name">Bilan de caisse</field>
+        <field name="model">wizard.bilan.caisse</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">pharmacie_management.report_bilan_caisse_template</field>
+        <field name="report_file">bilan_caisse</field>
+    </record>
+
+    <!-- Rapport 4 : Bon de commande fournisseur -->
+    <record id="action_report_bon_commande" model="ir.actions.report">
+        <field name="name">Bon de commande fournisseur</field>
+        <field name="model">pharmacie.reappro</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">pharmacie_management.report_bon_commande_template</field>
+        <field name="report_file">bon_commande_fournisseur</field>
+        <field name="binding_model_id" ref="model_pharmacie_reappro"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>

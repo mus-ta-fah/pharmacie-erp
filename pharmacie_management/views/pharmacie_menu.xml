@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ══════════════════════════════════════════════
+         MENU RACINE
+    ══════════════════════════════════════════════ -->
+    <menuitem id="menu_pharmacie_root"
+              name="Pharmacie"
+              sequence="50"
+              web_icon="pharmacie_management,static/description/icon.png"/>
+
+    <!-- ══════════════════════════════════════════════
+         CAISSE
+    ══════════════════════════════════════════════ -->
+    <menuitem id="menu_pharmacie_caisse"
+              name="Caisse"
+              parent="menu_pharmacie_root"
+              sequence="10"/>
+
+    <menuitem id="menu_pharmacie_vente_new"
+              name="Nouvelle vente"
+              parent="menu_pharmacie_caisse"
+              action="action_pharmacie_vente_new"
+              sequence="10"/>
+
+    <menuitem id="menu_pharmacie_vente_hist"
+              name="Historique des ventes"
+              parent="menu_pharmacie_caisse"
+              action="action_pharmacie_vente"
+              sequence="20"/>
+
+    <!-- ══════════════════════════════════════════════
+         ORDONNANCES
+    ══════════════════════════════════════════════ -->
+    <menuitem id="menu_pharmacie_ordonnances"
+              name="Ordonnances"
+              parent="menu_pharmacie_root"
+              sequence="20"/>
+
+    <menuitem id="menu_pharmacie_ordonnance_list"
+              name="Liste des ordonnances"
+              parent="menu_pharmacie_ordonnances"
+              action="action_pharmacie_ordonnance"
+              sequence="10"/>
+
+    <!-- ══════════════════════════════════════════════
+         STOCK
+    ══════════════════════════════════════════════ -->
+    <menuitem id="menu_pharmacie_stock"
+              name="Stock"
+              parent="menu_pharmacie_root"
+              sequence="30"/>
+
+    <menuitem id="menu_pharmacie_medicament"
+              name="Médicaments"
+              parent="menu_pharmacie_stock"
+              action="action_pharmacie_medicament"
+              sequence="10"/>
+
+    <menuitem id="menu_pharmacie_lot"
+              name="Lots et stocks"
+              parent="menu_pharmacie_stock"
+              action="action_pharmacie_lot"
+              sequence="20"/>
+
+    <menuitem id="menu_pharmacie_alertes"
+              name="Alertes de péremption / rupture"
+              parent="menu_pharmacie_stock"
+              action="action_pharmacie_lot_alertes"
+              sequence="30"/>
+
+    <!-- ══════════════════════════════════════════════
+         FOURNISSEURS
+    ══════════════════════════════════════════════ -->
+    <menuitem id="menu_pharmacie_fournisseurs"
+              name="Fournisseurs"
+              parent="menu_pharmacie_root"
+              sequence="40"/>
+
+    <menuitem id="menu_pharmacie_fournisseur_list"
+              name="Liste des fournisseurs"
+              parent="menu_pharmacie_fournisseurs"
+              action="action_pharmacie_fournisseurs"
+              sequence="10"/>
+
+    <menuitem id="menu_pharmacie_reappro"
+              name="Réapprovisionnements"
+              parent="menu_pharmacie_fournisseurs"
+              action="action_pharmacie_reappro"
+              sequence="20"
+              groups="pharmacie_management.group_pharmacie_pharmacien,pharmacie_management.group_pharmacie_gestionnaire"/>
+
+    <!-- ══════════════════════════════════════════════
+         RAPPORTS — Pharmacien + Gestionnaire uniquement
+    ══════════════════════════════════════════════ -->
+    <menuitem id="menu_pharmacie_rapports"
+              name="Rapports"
+              parent="menu_pharmacie_root"
+              sequence="50"
+              groups="pharmacie_management.group_pharmacie_pharmacien,pharmacie_management.group_pharmacie_gestionnaire"/>
+
+    <menuitem id="menu_pharmacie_bilan_caisse"
+              name="Bilan de caisse"
+              parent="menu_pharmacie_rapports"
+              action="action_wizard_bilan_caisse"
+              sequence="10"
+              groups="pharmacie_management.group_pharmacie_pharmacien,pharmacie_management.group_pharmacie_gestionnaire"/>
+
+    <!-- ══════════════════════════════════════════════
+         CONFIGURATION — Pharmacien + Gestionnaire uniquement
+    ══════════════════════════════════════════════ -->
+    <menuitem id="menu_pharmacie_config"
+              name="Configuration"
+              parent="menu_pharmacie_root"
+              sequence="60"
+              groups="pharmacie_management.group_pharmacie_pharmacien,pharmacie_management.group_pharmacie_gestionnaire"/>
+
+    <menuitem id="menu_pharmacie_categorie"
+              name="Catégories de médicaments"
+              parent="menu_pharmacie_config"
+              action="action_pharmacie_categorie"
+              sequence="10"
+              groups="pharmacie_management.group_pharmacie_pharmacien,pharmacie_management.group_pharmacie_gestionnaire"/>
+
+
+    <!-- Wizard réappro auto dans Stock
+         Réservé au Gestionnaire : le Pharmacien n'a que des droits de lecture
+         sur pharmacie.reappro (voir ir.model.access.csv), il ne peut donc pas
+         créer les bons de commande générés par ce wizard.
+         NOTE : l'attribut groups= est additif au chargement XML (Command.link),
+         il ne retire jamais un groupe déjà présent en base lors d'une mise à
+         jour de module — d'où le préfixe "-" explicite pour retirer Pharmacien
+         (nécessaire ici puisque ce module a déjà été installé avec Pharmacien
+         dans la liste). -->
+    <menuitem id="menu_pharmacie_reappro_auto"
+              name="Réapprovisionnement automatique"
+              parent="menu_pharmacie_stock"
+              action="action_wizard_reappro_auto"
+              sequence="40"
+              groups="pharmacie_management.group_pharmacie_gestionnaire,-pharmacie_management.group_pharmacie_pharmacien"/>
+
+</odoo>
+<!-- NOTER : le fichier est fermé par </odoo> ci-dessus. Cette ligne sera ignorée. -->

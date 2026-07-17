@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <template id="report_bon_commande_template">
+    <t t-foreach="docs" t-as="bc">
+      <t t-call="web.html_container">
+        <t t-call="web.external_layout">
+          <div class="page">
+
+            <div class="row">
+              <div class="col-6">
+                <h2>BON DE COMMANDE FOURNISSEUR</h2>
+                <p><strong>Référence :</strong> <t t-esc="bc.reference"/></p>
+                <p><strong>Date commande :</strong> <t t-esc="bc.date_commande"/></p>
+                <p><strong>Livraison prévue :</strong> <t t-esc="bc.date_livraison_prevue"/></p>
+              </div>
+              <div class="col-6 text-right">
+                <h4>Fournisseur</h4>
+                <p>
+                  <strong><t t-esc="bc.fournisseur_id.name"/></strong><br/>
+                  <t t-if="bc.fournisseur_id.city"><t t-esc="bc.fournisseur_id.city"/></t><br/>
+                  <t t-if="bc.fournisseur_id.phone">Tél : <t t-esc="bc.fournisseur_id.phone"/></t><br/>
+                  <t t-if="bc.fournisseur_id.numero_agrement">
+                    Agrément DPM : <t t-esc="bc.fournisseur_id.numero_agrement"/>
+                  </t>
+                </p>
+              </div>
+            </div>
+
+            <hr/>
+
+            <table class="table table-bordered table-sm mt-3">
+              <thead class="table-dark">
+                <tr>
+                  <th>#</th>
+                  <th>Médicament</th>
+                  <th>DCI</th>
+                  <th>Forme</th>
+                  <th>Conditionnement</th>
+                  <th class="text-center">Qté cmd.</th>
+                  <th class="text-right">P.U. (FCFA)</th>
+                  <th class="text-right">Total (FCFA)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <t t-foreach="bc.ligne_ids" t-as="ligne">
+                  <tr>
+                    <td><t t-esc="ligne_index + 1"/></td>
+                    <td><t t-esc="ligne.medicament_id.nom_commercial"/></td>
+                    <td><t t-esc="ligne.medicament_id.dci"/></td>
+                    <td><t t-esc="ligne.medicament_id.forme"/></td>
+                    <td><t t-esc="ligne.medicament_id.conditionnement"/></td>
+                    <td class="text-center"><t t-esc="ligne.quantite_commandee"/></td>
+                    <td class="text-right"><t t-esc="'%d' % ligne.prix_unitaire"/></td>
+                    <td class="text-right"><t t-esc="'%d' % ligne.sous_total"/></td>
+                  </tr>
+                </t>
+              </tbody>
+              <tfoot>
+                <tr class="table-success">
+                  <td colspan="7" class="text-right"><strong>MONTANT TOTAL :</strong></td>
+                  <td class="text-right">
+                    <strong><t t-esc="'%d' % bc.montant_total"/> FCFA</strong>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+
+            <div class="row mt-5">
+              <div class="col-6">
+                <p><strong>Le Pharmacien Responsable</strong></p>
+                <br/><br/>
+                <p>___________________________</p>
+                <p><em>Signature et cachet</em></p>
+              </div>
+              <div class="col-6 text-right">
+                <p><strong>Le Fournisseur</strong></p>
+                <br/><br/>
+                <p>___________________________</p>
+                <p><em>Signature et cachet</em></p>
+              </div>
+            </div>
+
+            <hr class="mt-4"/>
+            <p class="small text-muted text-center">
+              Conformément aux dispositions de la loi pharmaceutique sénégalaise et
+              aux conditions générales d'achat de la pharmacie. Tout litige relatif
+              à la présente commande sera soumis à la juridiction compétente de Dakar.
+            </p>
+
+          </div>
+        </t>
+      </t>
+    </t>
+  </template>
+</odoo>

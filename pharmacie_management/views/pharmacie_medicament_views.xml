@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ══════════════════════════════════════════════
+         VUE FORMULAIRE — Médicament
+    ══════════════════════════════════════════════ -->
+    <record id="view_pharmacie_medicament_form" model="ir.ui.view">
+        <field name="name">pharmacie.medicament.form</field>
+        <field name="model">pharmacie.medicament</field>
+        <field name="arch" type="xml">
+            <form string="Médicament">
+                <sheet>
+                    <div class="oe_title">
+                        <field name="photo" widget="image" class="oe_avatar"/>
+                        <h1>
+                            <field name="nom_commercial" placeholder="Nom commercial..."/>
+                        </h1>
+                        <h2>
+                            <field name="dci" placeholder="DCI..."/>
+                        </h2>
+                    </div>
+                    <group>
+                        <group string="Identification">
+                            <field name="forme"/>
+                            <field name="dosage"/>
+                            <field name="conditionnement"/>
+                            <field name="categorie_id"/>
+                            <field name="sur_ordonnance" widget="boolean_toggle"/>
+                        </group>
+                        <group string="Prix &amp; TVA">
+                            <field name="fournisseur_id"/>
+                            <field name="prix_achat"/>
+                            <field name="prix_vente"/>
+                            <field name="taux_tva"/>
+                            <field name="marge_pct" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="Stock">
+                        <group>
+                            <field name="alerte_rupture"/>
+                            <field name="stock_actuel" readonly="1"/>
+                            <field name="alerte_stock" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Notice" name="notice">
+                            <field name="notice" placeholder="Posologie, contre-indications..."/>
+                        </page>
+                        <page string="Lots en stock" name="lots">
+                            <field name="lot_ids" readonly="1">
+                                <list decoration-danger="jours_avant_peremption &lt; 30"
+                                      decoration-warning="jours_avant_peremption &lt; 90 and jours_avant_peremption >= 30"
+                                      decoration-muted="statut != 'valide'">
+                                    <field name="numero_lot"/>
+                                    <field name="date_peremption"/>
+                                    <field name="jours_avant_peremption"/>
+                                    <field name="quantite_restante"/>
+                                    <field name="statut"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════
+         VUE LISTE — Médicament
+    ══════════════════════════════════════════════ -->
+    <record id="view_pharmacie_medicament_tree" model="ir.ui.view">
+        <field name="name">pharmacie.medicament.tree</field>
+        <field name="model">pharmacie.medicament</field>
+        <field name="arch" type="xml">
+            <list string="Médicaments"
+                  decoration-danger="alerte_stock == 'rupture'"
+                  decoration-warning="alerte_stock == 'faible'">
+                <field name="nom_commercial"/>
+                <field name="dci"/>
+                <field name="forme"/>
+                <field name="dosage"/>
+                <field name="categorie_id"/>
+                <field name="prix_vente"/>
+                <field name="taux_tva"/>
+                <field name="stock_actuel"/>
+                <field name="sur_ordonnance" widget="boolean"/>
+                <field name="alerte_stock" invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════
+         VUE KANBAN — Médicament (OWL / Odoo 18)
+    ══════════════════════════════════════════════ -->
+    <record id="view_pharmacie_medicament_kanban" model="ir.ui.view">
+        <field name="name">pharmacie.medicament.kanban</field>
+        <field name="model">pharmacie.medicament</field>
+        <field name="arch" type="xml">
+            <kanban>
+                <field name="nom_commercial"/>
+                <field name="dci"/>
+                <field name="stock_actuel"/>
+                <field name="alerte_stock"/>
+                <field name="prix_vente"/>
+                <field name="sur_ordonnance"/>
+                <field name="photo"/>
+                <templates>
+                    <!-- template "card" = nouveau format Kanban OWL Odoo 17/18 -->
+                    <t t-name="card">
+                        <div t-attf-class="
+                            #{record.alerte_stock.raw_value == 'rupture' ? 'border border-danger' :
+                              record.alerte_stock.raw_value == 'faible'  ? 'border border-warning' :
+                                                                           'border border-success'}
+                            rounded p-2">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <field name="photo" widget="image"
+                                       options="{'size': [40,40]}"
+                                       class="rounded"/>
+                                <div>
+                                    <strong><field name="nom_commercial"/></strong>
+                                    <div class="text-muted small"><field name="dci"/></div>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-1">
+                                <span t-attf-class="badge
+                                    #{record.alerte_stock.raw_value == 'rupture' ? 'text-bg-danger' :
+                                      record.alerte_stock.raw_value == 'faible'  ? 'text-bg-warning' :
+                                                                                   'text-bg-success'}">
+                                    Stock : <field name="stock_actuel"/>
+                                </span>
+                                <strong><field name="prix_vente"/> FCFA</strong>
+                            </div>
+                            <div t-if="record.sur_ordonnance.raw_value" class="mt-1">
+                                <span class="badge text-bg-info">Ordonnance obligatoire</span>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════
+         VUE RECHERCHE — Médicament
+    ══════════════════════════════════════════════ -->
+    <record id="view_pharmacie_medicament_search" model="ir.ui.view">
+        <field name="name">pharmacie.medicament.search</field>
+        <field name="model">pharmacie.medicament</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="nom_commercial" string="Médicament"/>
+                <field name="dci"/>
+                <field name="categorie_id"/>
+                <field name="fournisseur_id"/>
+                <separator/>
+                <filter name="sur_ordonnance" string="Sur ordonnance"
+                        domain="[('sur_ordonnance','=',True)]"/>
+                <filter name="rupture" string="En rupture"
+                        domain="[('alerte_stock','=','rupture')]"/>
+                <filter name="stock_faible" string="Stock faible"
+                        domain="[('alerte_stock','=','faible')]"/>
+                <filter name="tva_0" string="Médicaments essentiels (TVA 0%)"
+                        domain="[('taux_tva','=','0')]"/>
+                <separator/>
+                <group expand="1" string="Regrouper par">
+                    <filter name="by_categorie" string="Catégorie"
+                            context="{'group_by':'categorie_id'}"/>
+                    <filter name="by_forme" string="Forme galénique"
+                            context="{'group_by':'forme'}"/>
+                    <filter name="by_fournisseur" string="Fournisseur"
+                            context="{'group_by':'fournisseur_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ACTION -->
+    <record id="action_pharmacie_medicament" model="ir.actions.act_window">
+        <field name="name">Médicaments</field>
+        <field name="res_model">pharmacie.medicament</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="view_pharmacie_medicament_search"/>
+    </record>
+
+    <!-- ACTION catégorie -->
+    <record id="action_pharmacie_categorie" model="ir.actions.act_window">
+        <field name="name">Catégories de médicaments</field>
+        <field name="res_model">pharmacie.categorie</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

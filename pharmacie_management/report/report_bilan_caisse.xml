@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <template id="report_bilan_caisse_template">
+    <t t-foreach="docs" t-as="wizard">
+      <t t-call="web.html_container">
+        <t t-call="web.external_layout">
+          <div class="page">
+
+            <h2 class="text-center">BILAN DE CAISSE</h2>
+            <p class="text-center text-muted">
+              Période : <t t-esc="wizard.date_debut"/> au <t t-esc="wizard.date_fin"/>
+            </p>
+            <p class="text-center text-muted">
+              Édité le <t t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y à %H:%M')"/>
+            </p>
+
+            <hr/>
+
+            <!-- Indicateurs globaux -->
+            <div class="row mt-3">
+              <div class="col-4 text-center border rounded p-2">
+                <h4><t t-esc="'%d' % wizard.ca_total"/> FCFA</h4>
+                <p class="text-muted">Chiffre d'affaires TTC</p>
+              </div>
+              <div class="col-4 text-center border rounded p-2">
+                <h4><t t-esc="wizard.nb_ventes"/></h4>
+                <p class="text-muted">Nombre de ventes</p>
+              </div>
+              <div class="col-4 text-center border rounded p-2">
+                <h4><t t-esc="'%d' % wizard.panier_moyen"/> FCFA</h4>
+                <p class="text-muted">Panier moyen</p>
+              </div>
+            </div>
+
+            <!-- Détail par vendeur -->
+            <h4 class="mt-4">Détail par vendeur</h4>
+            <table class="table table-bordered">
+              <thead class="table-dark">
+                <tr>
+                  <th>Vendeur</th>
+                  <th class="text-center">Nb ventes</th>
+                  <th class="text-right">CA TTC (FCFA)</th>
+                  <th class="text-right">Panier moyen (FCFA)</th>
+                  <th class="text-center">Part (%)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <t t-foreach="wizard.detail_ids" t-as="detail">
+                  <tr>
+                    <td><t t-esc="detail.vendeur_id.name"/></td>
+                    <td class="text-center"><t t-esc="detail.nb_ventes"/></td>
+                    <td class="text-right"><t t-esc="'%d' % detail.ca_ttc"/></td>
+                    <td class="text-right"><t t-esc="'%d' % detail.panier_moyen"/></td>
+                    <td class="text-center">
+                      <t t-esc="'%.1f' % (detail.ca_ttc / wizard.ca_total * 100 if wizard.ca_total else 0)"/> %
+                    </td>
+                  </tr>
+                </t>
+              </tbody>
+              <tfoot>
+                <tr class="table-success">
+                  <td><strong>TOTAL</strong></td>
+                  <td class="text-center"><strong><t t-esc="wizard.nb_ventes"/></strong></td>
+                  <td class="text-right"><strong><t t-esc="'%d' % wizard.ca_total"/> FCFA</strong></td>
+                  <td class="text-right"><strong><t t-esc="'%d' % wizard.panier_moyen"/> FCFA</strong></td>
+                  <td class="text-center"><strong>100 %</strong></td>
+                </tr>
+              </tfoot>
+            </table>
+
+            <div class="row mt-5">
+              <div class="col-6">
+                <p>Fait à Dakar, le <t t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y')"/></p>
+                <p>Le Pharmacien Responsable :</p>
+                <br/><br/>
+                <p>___________________________</p>
+                <p><em>Signature et cachet</em></p>
+              </div>
+            </div>
+
+          </div>
+        </t>
+      </t>
+    </t>
+  </template>
+</odoo>

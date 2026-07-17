@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <template id="report_ticket_caisse_template">
+    <t t-foreach="docs" t-as="vente">
+      <t t-call="web.html_container">
+        <t t-call="web.external_layout">
+          <div class="page">
+
+            <div class="text-center mb-3">
+              <h2>TICKET DE CAISSE</h2>
+              <p class="text-muted">Pharmacie — <t t-esc="res_company.name"/></p>
+            </div>
+
+            <table class="table table-sm">
+              <tr>
+                <td><strong>Référence :</strong></td>
+                <td><t t-esc="vente.reference"/></td>
+                <td><strong>Date :</strong></td>
+                <td><t t-esc="vente.date_vente"/></td>
+              </tr>
+              <tr>
+                <td><strong>Vendeur :</strong></td>
+                <td><t t-esc="vente.vendeur_id.name"/></td>
+                <td><strong>Mode paiement :</strong></td>
+                <td><t t-esc="vente.mode_paiement"/></td>
+              </tr>
+              <t t-if="vente.client_id">
+                <tr>
+                  <td><strong>Client :</strong></td>
+                  <td colspan="3"><t t-esc="vente.client_id.name"/></td>
+                </tr>
+              </t>
+              <t t-if="vente.ordonnance_id">
+                <tr>
+                  <td><strong>Ordonnance :</strong></td>
+                  <td colspan="3">
+                    Dr. <t t-esc="vente.ordonnance_id.medecin_nom"/> —
+                    Patient : <t t-esc="vente.ordonnance_id.patient_nom"/>
+                  </td>
+                </tr>
+              </t>
+            </table>
+
+            <hr/>
+
+            <table class="table table-bordered table-sm mt-3">
+              <thead class="table-dark">
+                <tr>
+                  <th>Médicament</th>
+                  <th>DCI</th>
+                  <th class="text-center">Qté</th>
+                  <th class="text-right">P.U. (FCFA)</th>
+                  <th class="text-center">TVA</th>
+                  <th class="text-right">Total TTC</th>
+                </tr>
+              </thead>
+              <tbody>
+                <t t-foreach="vente.ligne_ids" t-as="ligne">
+                  <tr>
+                    <td><t t-esc="ligne.medicament_id.nom_commercial"/></td>
+                    <td><t t-esc="ligne.medicament_id.dci"/></td>
+                    <td class="text-center"><t t-esc="ligne.quantite"/></td>
+                    <td class="text-right"><t t-esc="'%d' % ligne.prix_unitaire"/></td>
+                    <td class="text-center"><t t-esc="ligne.taux_tva"/> %</td>
+                    <td class="text-right"><t t-esc="'%d' % ligne.sous_total_ttc"/></td>
+                  </tr>
+                </t>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="5" class="text-right"><strong>Montant HT :</strong></td>
+                  <td class="text-right"><t t-esc="'%d' % vente.montant_ht"/> FCFA</td>
+                </tr>
+                <tr>
+                  <td colspan="5" class="text-right"><strong>TVA :</strong></td>
+                  <td class="text-right"><t t-esc="'%d' % vente.tva"/> FCFA</td>
+                </tr>
+                <tr class="table-success">
+                  <td colspan="5" class="text-right"><strong>TOTAL TTC :</strong></td>
+                  <td class="text-right">
+                    <strong><t t-esc="'%d' % vente.montant_ttc"/> FCFA</strong>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+
+            <div class="text-center mt-4">
+              <p><em>Merci pour votre confiance — Bonne santé !</em></p>
+            </div>
+
+          </div>
+        </t>
+      </t>
+    </t>
+  </template>
+</odoo>

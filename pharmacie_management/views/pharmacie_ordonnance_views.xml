@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ══════════════════════════════════════════════
+         VUE FORMULAIRE — Ordonnance
+    ══════════════════════════════════════════════ -->
+    <record id="view_pharmacie_ordonnance_form" model="ir.ui.view">
+        <field name="name">pharmacie.ordonnance.form</field>
+        <field name="model">pharmacie.ordonnance</field>
+        <field name="arch" type="xml">
+            <form string="Ordonnance médicale">
+                <header>
+                    <field name="statut" widget="statusbar"
+                           statusbar_visible="attente,partielle,complete"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Patient">
+                            <field name="patient_nom"/>
+                            <field name="patient_age"/>
+                            <field name="patient_genre"/>
+                        </group>
+                        <group string="Prescripteur">
+                            <field name="medecin_nom"/>
+                            <field name="structure_sante"/>
+                            <field name="date_prescription"/>
+                        </group>
+                    </group>
+
+                    <group string="Vente associée" invisible="not vente_id">
+                        <field name="vente_id" readonly="1"/>
+                    </group>
+
+                    <notebook>
+                        <page string="Médicaments prescrits" name="medicaments">
+                            <field name="medicament_ids" widget="many2many_tags"/>
+                            <separator string="Détail posologique"/>
+                            <field name="posologie_ids">
+                                <list editable="bottom">
+                                    <field name="medicament_id"/>
+                                    <field name="posologie"/>
+                                    <field name="duree_jours"/>
+                                    <field name="quantite_prescrite"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Scan de l'ordonnance" name="scan">
+                            <!-- widget=image pour afficher le scan -->
+                            <field name="scan_ordonnance" widget="image"
+                                   style="max-height: 500px;"/>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="notes" placeholder="Observations internes..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════
+         VUE LISTE — Ordonnance
+    ══════════════════════════════════════════════ -->
+    <record id="view_pharmacie_ordonnance_tree" model="ir.ui.view">
+        <field name="name">pharmacie.ordonnance.tree</field>
+        <field name="model">pharmacie.ordonnance</field>
+        <field name="arch" type="xml">
+            <list string="Ordonnances"
+                  decoration-success="statut == 'complete'"
+                  decoration-warning="statut == 'partielle'">
+                <field name="patient_nom"/>
+                <field name="medecin_nom"/>
+                <field name="structure_sante"/>
+                <field name="date_prescription"/>
+                <field name="vente_id"/>
+                <field name="statut"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════
+         VUE RECHERCHE — Ordonnance
+    ══════════════════════════════════════════════ -->
+    <record id="view_pharmacie_ordonnance_search" model="ir.ui.view">
+        <field name="name">pharmacie.ordonnance.search</field>
+        <field name="model">pharmacie.ordonnance</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="patient_nom"/>
+                <field name="medecin_nom"/>
+                <separator/>
+                <filter name="en_attente" string="En attente"
+                        domain="[('statut','=','attente')]"/>
+                <filter name="delivrees" string="Délivrées"
+                        domain="[('statut','=','complete')]"/>
+                <separator/>
+                <group expand="1" string="Regrouper par">
+                    <filter name="by_statut" string="Statut"
+                            context="{'group_by':'statut'}"/>
+                    <filter name="by_date" string="Date"
+                            context="{'group_by':'date_prescription:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════
+         ACTION WINDOW — Ordonnance
+    ══════════════════════════════════════════════ -->
+    <record id="action_pharmacie_ordonnance" model="ir.actions.act_window">
+        <field name="name">Ordonnances</field>
+        <field name="res_model">pharmacie.ordonnance</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_pharmacie_ordonnance_search"/>
+    </record>
+
+</odoo>

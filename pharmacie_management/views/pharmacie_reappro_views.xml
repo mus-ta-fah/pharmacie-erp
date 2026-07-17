@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ══════════════════════════════════════════════
+         VUE FORMULAIRE — Réapprovisionnement
+    ══════════════════════════════════════════════ -->
+    <record id="view_pharmacie_reappro_form" model="ir.ui.view">
+        <field name="name">pharmacie.reappro.form</field>
+        <field name="model">pharmacie.reappro</field>
+        <field name="arch" type="xml">
+            <form string="Bon de commande fournisseur">
+                <header>
+                    <button name="action_envoyer_commande"
+                            string="Envoyer la commande"
+                            type="object"
+                            class="btn-primary"
+                            invisible="statut != 'brouillon'"/>
+                    <button name="action_receptionner"
+                            string="Réceptionner"
+                            type="object"
+                            class="btn-success"
+                            invisible="statut not in ('commande', 'partiel')"/>
+                    <button name="action_annuler"
+                            string="Annuler"
+                            type="object"
+                            class="btn-danger"
+                            invisible="statut != 'brouillon'"/>
+                    <field name="statut" widget="statusbar"
+                           statusbar_visible="brouillon,commande,partiel,recu"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="reference" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="Fournisseur">
+                            <field name="fournisseur_id"
+                                   readonly="statut != 'brouillon'"/>
+                        </group>
+                        <group string="Dates">
+                            <field name="date_commande"
+                                   readonly="statut != 'brouillon'"/>
+                            <field name="date_livraison_prevue"
+                                   readonly="statut != 'brouillon'"/>
+                        </group>
+                    </group>
+
+                    <!-- Lignes de commande -->
+                    <field name="ligne_ids"
+                           readonly="statut not in ('brouillon', 'commande', 'partiel')">
+                        <list editable="bottom">
+                            <field name="medicament_id"/>
+                            <field name="quantite_commandee"/>
+                            <field name="quantite_recue"
+                                   readonly="parent.statut == 'brouillon'"/>
+                            <field name="prix_unitaire"/>
+                            <field name="date_fabrication"/>
+                            <field name="date_peremption"/>
+                            <field name="sous_total" readonly="1"/>
+                        </list>
+                    </field>
+
+                    <!-- Total -->
+                    <group class="oe_subtotal_footer oe_right">
+                        <field name="montant_total" readonly="1"
+                               class="oe_subtotal_footer_separator"/>
+                    </group>
+
+                    <field name="note_interne"
+                           placeholder="Conditions de livraison, observations..."
+                           readonly="statut not in ('brouillon',)"/>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════
+         VUE LISTE — Réapprovisionnement
+    ══════════════════════════════════════════════ -->
+    <record id="view_pharmacie_reappro_tree" model="ir.ui.view">
+        <field name="name">pharmacie.reappro.tree</field>
+        <field name="model">pharmacie.reappro</field>
+        <field name="arch" type="xml">
+            <list string="Réapprovisionnements"
+                  decoration-success="statut == 'recu'"
+                  decoration-warning="statut == 'partiel'"
+                  decoration-info="statut == 'commande'"
+                  decoration-muted="statut == 'annulee'">
+                <field name="reference"/>
+                <field name="fournisseur_id"/>
+                <field name="date_commande"/>
+                <field name="date_livraison_prevue"/>
+                <field name="montant_total"/>
+                <field name="statut"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════
+         VUE RECHERCHE — Réapprovisionnement
+    ══════════════════════════════════════════════ -->
+    <record id="view_pharmacie_reappro_search" model="ir.ui.view">
+        <field name="name">pharmacie.reappro.search</field>
+        <field name="model">pharmacie.reappro</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="reference"/>
+                <field name="fournisseur_id"/>
+                <separator/>
+                <filter name="brouillon" string="Brouillons"
+                        domain="[('statut','=','brouillon')]"/>
+                <filter name="commande" string="Commandés"
+                        domain="[('statut','=','commande')]"/>
+                <filter name="partiel" string="Reçus partiellement"
+                        domain="[('statut','=','partiel')]"/>
+                <filter name="recu" string="Reçus"
+                        domain="[('statut','=','recu')]"/>
+                <separator/>
+                <group expand="1" string="Regrouper par">
+                    <filter name="by_fournisseur" string="Fournisseur"
+                            context="{'group_by':'fournisseur_id'}"/>
+                    <filter name="by_statut" string="Statut"
+                            context="{'group_by':'statut'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════
+         ACTIONS — Réapprovisionnement
+    ══════════════════════════════════════════════ -->
+    <record id="action_pharmacie_reappro" model="ir.actions.act_window">
+        <field name="name">Réapprovisionnements</field>
+        <field name="res_model">pharmacie.reappro</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_pharmacie_reappro_search"/>
+    </record>
+
+    <!-- Vue héritée res.partner : ajout champs fournisseur pharma -->
+    <record id="view_partner_pharmacie_inherit" model="ir.ui.view">
+        <field name="name">res.partner.form.pharmacie</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Fournisseur pharmaceutique"
+                      invisible="not is_fournisseur_pharma">
+                    <group>
+                        <field name="is_fournisseur_pharma" widget="boolean_toggle"/>
+                        <field name="numero_agrement"/>
+                        <field name="delai_livraison_moyen"/>
+                    </group>
+                </page>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="%(action_pharmacie_reappro)d"
+                        type="action"
+                        class="oe_stat_button"
+                        icon="fa-truck"
+                        invisible="not is_fournisseur_pharma"
+                        context="{'default_fournisseur_id': id,
+                                  'search_default_fournisseur_id': id}">
+                    <span class="o_stat_text">Commandes</span>
+                </button>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Action fournisseurs pharma -->
+    <record id="action_pharmacie_fournisseurs" model="ir.actions.act_window">
+        <field name="name">Fournisseurs pharmaceutiques</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('is_fournisseur_pharma','=',True)]</field>
+        <field name="context">{'default_is_fournisseur_pharma': True}</field>
+    </record>
+
+</odoo>

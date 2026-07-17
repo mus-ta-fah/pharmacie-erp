@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_wizard_bilan_caisse_form" model="ir.ui.view">
+        <field name="name">wizard.bilan.caisse.form</field>
+        <field name="model">wizard.bilan.caisse</field>
+        <field name="arch" type="xml">
+            <form string="Bilan de caisse">
+                <group string="Période">
+                    <field name="date_debut"/>
+                    <field name="date_fin"/>
+                </group>
+                <group string="Résultats de la période"
+                       invisible="not calcule">
+                    <group>
+                        <field name="ca_total" readonly="1"/>
+                        <field name="nb_ventes" readonly="1"/>
+                    </group>
+                    <group>
+                        <field name="panier_moyen" readonly="1"/>
+                    </group>
+                </group>
+                <field name="detail_ids" readonly="1"
+                       invisible="not calcule">
+                    <list>
+                        <field name="vendeur_id"/>
+                        <field name="nb_ventes"/>
+                        <field name="ca_ttc"/>
+                        <field name="panier_moyen"/>
+                    </list>
+                </field>
+                <field name="calcule" invisible="1"/>
+                <footer>
+                    <button name="action_calculer"
+                            string="Calculer"
+                            type="object" class="btn-primary"/>
+                    <button name="action_generer_pdf"
+                            string="Générer le PDF"
+                            type="object" class="btn-success"
+                            invisible="not calcule"/>
+                    <button string="Fermer" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_wizard_bilan_caisse" model="ir.actions.act_window">
+        <field name="name">Bilan de caisse</field>
+        <field name="res_model">wizard.bilan.caisse</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

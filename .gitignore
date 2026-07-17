@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# macOS
+.DS_Store
+
+# Odoo runtime / filestore (persisted in docker volumes, not source)
+*.log
+odoo.conf.local
+
+# Editors
+.vscode/
+.idea/

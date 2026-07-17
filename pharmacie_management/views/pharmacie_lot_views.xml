@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ══════════════════════════════════════════════
+         VUE FORMULAIRE — Lot
+    ══════════════════════════════════════════════ -->
+    <record id="view_pharmacie_lot_form" model="ir.ui.view">
+        <field name="name">pharmacie.lot.form</field>
+        <field name="model">pharmacie.lot</field>
+        <field name="arch" type="xml">
+            <form string="Lot de stock">
+                <header>
+                    <field name="statut" widget="statusbar"
+                           statusbar_visible="valide,expire,epuise"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="numero_lot" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="Médicament">
+                            <field name="medicament_id"/>
+                            <field name="reappro_id" readonly="1"/>
+                        </group>
+                        <group string="Dates">
+                            <field name="date_fabrication"/>
+                            <field name="date_peremption"/>
+                            <field name="jours_avant_peremption" readonly="1"
+                                   decoration-danger="jours_avant_peremption &lt; 30"
+                                   decoration-warning="jours_avant_peremption &lt; 90"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Quantités">
+                            <field name="quantite_initiale"/>
+                            <field name="quantite_restante"/>
+                            <field name="prix_achat_lot"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════
+         VUE LISTE — Lot (avec alertes visuelles)
+    ══════════════════════════════════════════════ -->
+    <record id="view_pharmacie_lot_tree" model="ir.ui.view">
+        <field name="name">pharmacie.lot.tree</field>
+        <field name="model">pharmacie.lot</field>
+        <field name="arch" type="xml">
+            <list string="Lots et stocks"
+                  decoration-danger="jours_avant_peremption &lt; 30 and statut == 'valide'"
+                  decoration-warning="jours_avant_peremption &lt; 90 and jours_avant_peremption &gt;= 30 and statut == 'valide'"
+                  decoration-muted="statut != 'valide'">
+                <field name="numero_lot"/>
+                <field name="medicament_id"/>
+                <field name="date_fabrication"/>
+                <field name="date_peremption"/>
+                <field name="jours_avant_peremption"/>
+                <field name="quantite_initiale"/>
+                <field name="quantite_restante"/>
+                <field name="statut"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════
+         VUE RECHERCHE — Lot
+    ══════════════════════════════════════════════ -->
+    <record id="view_pharmacie_lot_search" model="ir.ui.view">
+        <field name="name">pharmacie.lot.search</field>
+        <field name="model">pharmacie.lot</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="numero_lot"/>
+                <field name="medicament_id"/>
+                <separator/>
+                <filter name="valide" string="Valides"
+                        domain="[('statut','=','valide')]"/>
+                <filter name="peremption_proche" string="Péremption &lt; 30 jours"
+                        domain="[('jours_avant_peremption','&lt;',30),('statut','=','valide')]"/>
+                <filter name="peremption_90" string="Péremption &lt; 90 jours"
+                        domain="[('jours_avant_peremption','&lt;',90),('statut','=','valide')]"/>
+                <filter name="expire" string="Expirés"
+                        domain="[('statut','=','expire')]"/>
+                <separator/>
+                <group expand="1" string="Regrouper par">
+                    <filter name="by_medicament" string="Médicament"
+                            context="{'group_by':'medicament_id'}"/>
+                    <filter name="by_statut" string="Statut"
+                            context="{'group_by':'statut'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════
+         ACTION WINDOW — Lot
+    ══════════════════════════════════════════════ -->
+    <record id="action_pharmacie_lot" model="ir.actions.act_window">
+        <field name="name">Lots et stocks</field>
+        <field name="res_model">pharmacie.lot</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_pharmacie_lot_search"/>
+        <field name="context">{'search_default_valide': 1}</field>
+    </record>
+
+    <!-- Action spéciale : alertes de péremption / rupture -->
+    <record id="action_pharmacie_lot_alertes" model="ir.actions.act_window">
+        <field name="name">Alertes de péremption / rupture</field>
+        <field name="res_model">pharmacie.lot</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('jours_avant_peremption', '&lt;', 30), ('statut', '=', 'valide')]</field>
+        <field name="search_view_id" ref="view_pharmacie_lot_search"/>
+    </record>
+
+</odoo>

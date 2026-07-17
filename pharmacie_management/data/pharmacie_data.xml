@@ -1,0 +1,390 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ══════════════════════════════════════════════
+             SÉQUENCES AUTOMATIQUES
+        ══════════════════════════════════════════════ -->
+        <record id="seq_pharmacie_lot" model="ir.sequence">
+            <field name="name">Numéro de lot</field>
+            <field name="code">pharmacie.lot</field>
+            <field name="prefix">LOT/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="number_increment">1</field>
+        </record>
+
+        <record id="seq_pharmacie_vente" model="ir.sequence">
+            <field name="name">Référence vente</field>
+            <field name="code">pharmacie.vente</field>
+            <field name="prefix">VTE/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="number_increment">1</field>
+        </record>
+
+        <record id="seq_pharmacie_reappro" model="ir.sequence">
+            <field name="name">Bon de commande pharmacie</field>
+            <field name="code">pharmacie.reappro</field>
+            <field name="prefix">BC/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="number_increment">1</field>
+        </record>
+
+        <!-- ══════════════════════════════════════════════
+             TÂCHE PLANIFIÉE — Mise à jour quotidienne du statut des lots
+             (valide → expiré dès que date_peremption est dépassée)
+        ══════════════════════════════════════════════ -->
+        <record id="cron_pharmacie_update_statuts_lots" model="ir.cron">
+            <field name="name">Pharmacie : mise à jour statut des lots (péremption)</field>
+            <field name="model_id" ref="model_pharmacie_lot"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_update_statuts()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="active">True</field>
+        </record>
+
+        <!-- ══════════════════════════════════════════════
+             CATÉGORIES DE MÉDICAMENTS
+        ══════════════════════════════════════════════ -->
+        <record id="cat_antibiotiques" model="pharmacie.categorie">
+            <field name="name">Antibiotiques</field>
+            <field name="code">ANTI</field>
+            <field name="description">Médicaments antibactériens</field>
+        </record>
+        <record id="cat_penicillines" model="pharmacie.categorie">
+            <field name="name">Pénicillines</field>
+            <field name="code">PENI</field>
+            <field name="parent_id" ref="cat_antibiotiques"/>
+        </record>
+        <record id="cat_analgesiques" model="pharmacie.categorie">
+            <field name="name">Analgésiques</field>
+            <field name="code">ANAL</field>
+        </record>
+        <record id="cat_antipaludiques" model="pharmacie.categorie">
+            <field name="name">Antipaludiques</field>
+            <field name="code">APAL</field>
+        </record>
+        <record id="cat_antihypertenseurs" model="pharmacie.categorie">
+            <field name="name">Antihypertenseurs</field>
+            <field name="code">AHYP</field>
+        </record>
+        <record id="cat_vitamines" model="pharmacie.categorie">
+            <field name="name">Vitamines et compléments</field>
+            <field name="code">VITA</field>
+        </record>
+
+        <!-- ══════════════════════════════════════════════
+             FOURNISSEURS PHARMACEUTIQUES (démo)
+        ══════════════════════════════════════════════ -->
+        <record id="fournisseur_laborex" model="res.partner">
+            <field name="name">Laborex Sénégal</field>
+            <field name="is_company" eval="True"/>
+            <field name="is_fournisseur_pharma" eval="True"/>
+            <field name="delai_livraison_moyen">3</field>
+            <field name="numero_agrement">DPM/2020/0042</field>
+            <field name="phone">+221 33 889 00 00</field>
+            <field name="city">Dakar</field>
+            <field name="country_id" ref="base.sn"/>
+        </record>
+
+        <record id="fournisseur_copharmed" model="res.partner">
+            <field name="name">Copharmed</field>
+            <field name="is_company" eval="True"/>
+            <field name="is_fournisseur_pharma" eval="True"/>
+            <field name="delai_livraison_moyen">5</field>
+            <field name="numero_agrement">DPM/2018/0017</field>
+            <field name="phone">+221 33 832 00 00</field>
+            <field name="city">Dakar</field>
+            <field name="country_id" ref="base.sn"/>
+        </record>
+
+        <record id="fournisseur_sodipharm" model="res.partner">
+            <field name="name">Sodipharm</field>
+            <field name="is_company" eval="True"/>
+            <field name="is_fournisseur_pharma" eval="True"/>
+            <field name="delai_livraison_moyen">7</field>
+            <field name="numero_agrement">DPM/2019/0033</field>
+            <field name="city">Thiès</field>
+            <field name="country_id" ref="base.sn"/>
+        </record>
+
+        <!-- ══════════════════════════════════════════════
+             MÉDICAMENTS DE DÉMONSTRATION (10 minimum)
+        ══════════════════════════════════════════════ -->
+        <record id="med_amoxicilline" model="pharmacie.medicament">
+            <field name="nom_commercial">Amoxil®</field>
+            <field name="dci">Amoxicilline</field>
+            <field name="forme">comprime</field>
+            <field name="dosage">500 mg</field>
+            <field name="conditionnement">Boîte de 24 comprimés</field>
+            <field name="categorie_id" ref="cat_penicillines"/>
+            <field name="fournisseur_id" ref="fournisseur_laborex"/>
+            <field name="prix_achat">850</field>
+            <field name="prix_vente">1200</field>
+            <field name="taux_tva">0</field>
+            <field name="sur_ordonnance" eval="True"/>
+            <field name="alerte_rupture">20</field>
+        </record>
+
+        <record id="med_paracetamol" model="pharmacie.medicament">
+            <field name="nom_commercial">Doliprane®</field>
+            <field name="dci">Paracétamol</field>
+            <field name="forme">comprime</field>
+            <field name="dosage">1000 mg</field>
+            <field name="conditionnement">Boîte de 16 comprimés</field>
+            <field name="categorie_id" ref="cat_analgesiques"/>
+            <field name="fournisseur_id" ref="fournisseur_copharmed"/>
+            <field name="prix_achat">250</field>
+            <field name="prix_vente">400</field>
+            <field name="taux_tva">0</field>
+            <field name="sur_ordonnance" eval="False"/>
+            <field name="alerte_rupture">30</field>
+        </record>
+
+        <record id="med_artemether" model="pharmacie.medicament">
+            <field name="nom_commercial">Coartem®</field>
+            <field name="dci">Artéméther/Luméfantrine</field>
+            <field name="forme">comprime</field>
+            <field name="dosage">20mg/120mg</field>
+            <field name="conditionnement">Boîte de 24 comprimés</field>
+            <field name="categorie_id" ref="cat_antipaludiques"/>
+            <field name="fournisseur_id" ref="fournisseur_laborex"/>
+            <field name="prix_achat">1800</field>
+            <field name="prix_vente">2500</field>
+            <field name="taux_tva">0</field>
+            <field name="sur_ordonnance" eval="False"/>
+            <field name="alerte_rupture">15</field>
+        </record>
+
+        <record id="med_amlodipine" model="pharmacie.medicament">
+            <field name="nom_commercial">Amlor®</field>
+            <field name="dci">Amlodipine</field>
+            <field name="forme">comprime</field>
+            <field name="dosage">5 mg</field>
+            <field name="conditionnement">Boîte de 30 comprimés</field>
+            <field name="categorie_id" ref="cat_antihypertenseurs"/>
+            <field name="fournisseur_id" ref="fournisseur_sodipharm"/>
+            <field name="prix_achat">1200</field>
+            <field name="prix_vente">1800</field>
+            <field name="taux_tva">0</field>
+            <field name="sur_ordonnance" eval="True"/>
+            <field name="alerte_rupture">10</field>
+        </record>
+
+        <record id="med_ibuprofen" model="pharmacie.medicament">
+            <field name="nom_commercial">Advil®</field>
+            <field name="dci">Ibuprofène</field>
+            <field name="forme">comprime</field>
+            <field name="dosage">400 mg</field>
+            <field name="conditionnement">Boîte de 20 comprimés</field>
+            <field name="categorie_id" ref="cat_analgesiques"/>
+            <field name="fournisseur_id" ref="fournisseur_copharmed"/>
+            <field name="prix_achat">300</field>
+            <field name="prix_vente">500</field>
+            <field name="taux_tva">18</field>
+            <field name="sur_ordonnance" eval="False"/>
+            <field name="alerte_rupture">25</field>
+        </record>
+
+        <record id="med_vitaminec" model="pharmacie.medicament">
+            <field name="nom_commercial">Vitascorbol®</field>
+            <field name="dci">Acide ascorbique (Vitamine C)</field>
+            <field name="forme">comprime</field>
+            <field name="dosage">500 mg</field>
+            <field name="conditionnement">Tube de 30 comprimés effervescents</field>
+            <field name="categorie_id" ref="cat_vitamines"/>
+            <field name="fournisseur_id" ref="fournisseur_copharmed"/>
+            <field name="prix_achat">400</field>
+            <field name="prix_vente">650</field>
+            <field name="taux_tva">18</field>
+            <field name="sur_ordonnance" eval="False"/>
+            <field name="alerte_rupture">20</field>
+        </record>
+
+        <record id="med_metronidazole" model="pharmacie.medicament">
+            <field name="nom_commercial">Flagyl®</field>
+            <field name="dci">Métronidazole</field>
+            <field name="forme">comprime</field>
+            <field name="dosage">500 mg</field>
+            <field name="conditionnement">Boîte de 14 comprimés</field>
+            <field name="categorie_id" ref="cat_antibiotiques"/>
+            <field name="fournisseur_id" ref="fournisseur_laborex"/>
+            <field name="prix_achat">600</field>
+            <field name="prix_vente">900</field>
+            <field name="taux_tva">0</field>
+            <field name="sur_ordonnance" eval="True"/>
+            <field name="alerte_rupture">15</field>
+        </record>
+
+        <record id="med_omeprazole" model="pharmacie.medicament">
+            <field name="nom_commercial">Mopral®</field>
+            <field name="dci">Oméprazole</field>
+            <field name="forme">gelule</field>
+            <field name="dosage">20 mg</field>
+            <field name="conditionnement">Boîte de 28 gélules</field>
+            <field name="categorie_id" ref="cat_analgesiques"/>
+            <field name="fournisseur_id" ref="fournisseur_sodipharm"/>
+            <field name="prix_achat">900</field>
+            <field name="prix_vente">1400</field>
+            <field name="taux_tva">0</field>
+            <field name="sur_ordonnance" eval="False"/>
+            <field name="alerte_rupture">10</field>
+        </record>
+
+        <record id="med_salbutamol" model="pharmacie.medicament">
+            <field name="nom_commercial">Ventoline®</field>
+            <field name="dci">Salbutamol</field>
+            <field name="forme">autre</field>
+            <field name="dosage">100 µg/dose</field>
+            <field name="conditionnement">Flacon pressurisé 200 doses</field>
+            <field name="categorie_id" ref="cat_analgesiques"/>
+            <field name="fournisseur_id" ref="fournisseur_laborex"/>
+            <field name="prix_achat">2500</field>
+            <field name="prix_vente">3800</field>
+            <field name="taux_tva">0</field>
+            <field name="sur_ordonnance" eval="True"/>
+            <field name="alerte_rupture">5</field>
+        </record>
+
+        <record id="med_zinc" model="pharmacie.medicament">
+            <field name="nom_commercial">Rubozinc®</field>
+            <field name="dci">Gluconate de zinc</field>
+            <field name="forme">gelule</field>
+            <field name="dosage">15 mg</field>
+            <field name="conditionnement">Boîte de 60 gélules</field>
+            <field name="categorie_id" ref="cat_vitamines"/>
+            <field name="fournisseur_id" ref="fournisseur_copharmed"/>
+            <field name="prix_achat">1500</field>
+            <field name="prix_vente">2200</field>
+            <field name="taux_tva">18</field>
+            <field name="sur_ordonnance" eval="False"/>
+            <field name="alerte_rupture">10</field>
+        </record>
+
+        <!-- ══════════════════════════════════════════════
+             LOTS DE STOCK (démo — 7 lots, dates variées pour
+             démontrer les alertes de péremption)
+        ══════════════════════════════════════════════ -->
+        <record id="lot_amoxicilline_1" model="pharmacie.lot">
+            <field name="medicament_id" ref="med_amoxicilline"/>
+            <field name="date_fabrication" eval="(datetime.today() - relativedelta(months=6)).strftime('%Y-%m-%d')"/>
+            <field name="date_peremption" eval="(datetime.today() + relativedelta(days=20)).strftime('%Y-%m-%d')"/>
+            <field name="quantite_initiale">50</field>
+            <field name="quantite_restante">45</field>
+            <field name="prix_achat_lot">850</field>
+        </record>
+        <record id="lot_paracetamol_1" model="pharmacie.lot">
+            <field name="medicament_id" ref="med_paracetamol"/>
+            <field name="date_fabrication" eval="(datetime.today() - relativedelta(months=3)).strftime('%Y-%m-%d')"/>
+            <field name="date_peremption" eval="(datetime.today() + relativedelta(days=730)).strftime('%Y-%m-%d')"/>
+            <field name="quantite_initiale">200</field>
+            <field name="quantite_restante">180</field>
+            <field name="prix_achat_lot">250</field>
+        </record>
+        <record id="lot_artemether_1" model="pharmacie.lot">
+            <field name="medicament_id" ref="med_artemether"/>
+            <field name="date_fabrication" eval="(datetime.today() - relativedelta(months=4)).strftime('%Y-%m-%d')"/>
+            <field name="date_peremption" eval="(datetime.today() + relativedelta(days=60)).strftime('%Y-%m-%d')"/>
+            <field name="quantite_initiale">80</field>
+            <field name="quantite_restante">55</field>
+            <field name="prix_achat_lot">1800</field>
+        </record>
+        <record id="lot_amlodipine_1" model="pharmacie.lot">
+            <field name="medicament_id" ref="med_amlodipine"/>
+            <field name="date_fabrication" eval="(datetime.today() - relativedelta(months=8)).strftime('%Y-%m-%d')"/>
+            <field name="date_peremption" eval="(datetime.today() + relativedelta(days=10)).strftime('%Y-%m-%d')"/>
+            <field name="quantite_initiale">30</field>
+            <field name="quantite_restante">6</field>
+            <field name="prix_achat_lot">1200</field>
+        </record>
+        <record id="lot_ibuprofen_1" model="pharmacie.lot">
+            <field name="medicament_id" ref="med_ibuprofen"/>
+            <field name="date_fabrication" eval="(datetime.today() - relativedelta(months=2)).strftime('%Y-%m-%d')"/>
+            <field name="date_peremption" eval="(datetime.today() + relativedelta(days=400)).strftime('%Y-%m-%d')"/>
+            <field name="quantite_initiale">100</field>
+            <field name="quantite_restante">89</field>
+            <field name="prix_achat_lot">300</field>
+        </record>
+        <record id="lot_vitaminec_1" model="pharmacie.lot">
+            <field name="medicament_id" ref="med_vitaminec"/>
+            <field name="date_fabrication" eval="(datetime.today() - relativedelta(months=5)).strftime('%Y-%m-%d')"/>
+            <field name="date_peremption" eval="(datetime.today() + relativedelta(days=250)).strftime('%Y-%m-%d')"/>
+            <field name="quantite_initiale">80</field>
+            <field name="quantite_restante">55</field>
+            <field name="prix_achat_lot">400</field>
+        </record>
+        <record id="lot_metronidazole_1" model="pharmacie.lot">
+            <field name="medicament_id" ref="med_metronidazole"/>
+            <field name="date_fabrication" eval="(datetime.today() - relativedelta(months=1)).strftime('%Y-%m-%d')"/>
+            <field name="date_peremption" eval="(datetime.today() + relativedelta(days=500)).strftime('%Y-%m-%d')"/>
+            <field name="quantite_initiale">60</field>
+            <field name="quantite_restante">48</field>
+            <field name="prix_achat_lot">600</field>
+        </record>
+
+        <!-- ══════════════════════════════════════════════
+             VENTES (démo — 5 ventes confirmées)
+        ══════════════════════════════════════════════ -->
+        <record id="vente_demo_1" model="pharmacie.vente">
+            <field name="vendeur_id" ref="base.user_admin"/>
+            <field name="mode_paiement">especes</field>
+            <field name="statut">confirmee</field>
+            <field name="date_vente" eval="(datetime.now() - relativedelta(days=5)).strftime('%Y-%m-%d %H:%M:%S')"/>
+            <field name="reference">VTE/DEMO/0001</field>
+            <field name="ligne_ids" eval="[(0, 0, {
+                'medicament_id': ref('med_paracetamol'),
+                'quantite': 2,
+                'prix_unitaire': 400,
+            })]"/>
+        </record>
+        <record id="vente_demo_2" model="pharmacie.vente">
+            <field name="vendeur_id" ref="base.user_admin"/>
+            <field name="mode_paiement">wave</field>
+            <field name="statut">confirmee</field>
+            <field name="date_vente" eval="(datetime.now() - relativedelta(days=4)).strftime('%Y-%m-%d %H:%M:%S')"/>
+            <field name="reference">VTE/DEMO/0002</field>
+            <field name="ligne_ids" eval="[(0, 0, {
+                'medicament_id': ref('med_ibuprofen'),
+                'quantite': 3,
+                'prix_unitaire': 500,
+            })]"/>
+        </record>
+        <record id="vente_demo_3" model="pharmacie.vente">
+            <field name="vendeur_id" ref="base.user_admin"/>
+            <field name="mode_paiement">orange_money</field>
+            <field name="statut">confirmee</field>
+            <field name="date_vente" eval="(datetime.now() - relativedelta(days=2)).strftime('%Y-%m-%d %H:%M:%S')"/>
+            <field name="reference">VTE/DEMO/0003</field>
+            <field name="ligne_ids" eval="[(0, 0, {
+                'medicament_id': ref('med_vitaminec'),
+                'quantite': 1,
+                'prix_unitaire': 650,
+            })]"/>
+        </record>
+        <record id="vente_demo_4" model="pharmacie.vente">
+            <field name="vendeur_id" ref="base.user_admin"/>
+            <field name="mode_paiement">carte</field>
+            <field name="statut">confirmee</field>
+            <field name="date_vente" eval="(datetime.now() - relativedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')"/>
+            <field name="reference">VTE/DEMO/0004</field>
+            <field name="ligne_ids" eval="[(0, 0, {
+                'medicament_id': ref('med_artemether'),
+                'quantite': 1,
+                'prix_unitaire': 2500,
+            })]"/>
+        </record>
+        <record id="vente_demo_5" model="pharmacie.vente">
+            <field name="vendeur_id" ref="base.user_admin"/>
+            <field name="mode_paiement">especes</field>
+            <field name="statut">confirmee</field>
+            <field name="date_vente" eval="datetime.now().strftime('%Y-%m-%d %H:%M:%S')"/>
+            <field name="reference">VTE/DEMO/0005</field>
+            <field name="ligne_ids" eval="[(0, 0, {
+                'medicament_id': ref('med_paracetamol'),
+                'quantite': 1,
+                'prix_unitaire': 400,
+            })]"/>
+        </record>
+
+    </data>
+</odoo>
