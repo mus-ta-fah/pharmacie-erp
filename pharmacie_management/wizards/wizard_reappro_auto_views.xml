@@ -9,12 +9,20 @@
                     <field name="nb_alertes" readonly="1"/>
                 </group>
                 <field name="ligne_ids">
+                    <!-- force_save="1" est indispensable ici : ces colonnes sont
+                         readonly (valeurs préremplies par default_get(), pas par
+                         l'utilisateur), et le client web Odoo exclut par défaut tout
+                         champ readonly du payload envoyé à web_save() lors de la
+                         sauvegarde (voir relational_model/record.js _getChanges()).
+                         Sans force_save="1", ces champs reviennent vides côté serveur
+                         après création — silencieusement, sans aucune erreur — alors
+                         qu'ils s'affichaient correctement à l'écran juste avant. -->
                     <list editable="bottom">
                         <field name="selectionne" widget="boolean_toggle"/>
-                        <field name="medicament_id" readonly="1"/>
-                        <field name="fournisseur_id" readonly="1"/>
-                        <field name="stock_actuel" readonly="1"/>
-                        <field name="alerte_rupture" readonly="1"/>
+                        <field name="medicament_id" readonly="1" force_save="1"/>
+                        <field name="fournisseur_id" readonly="1" force_save="1"/>
+                        <field name="stock_actuel" readonly="1" force_save="1"/>
+                        <field name="alerte_rupture" readonly="1" force_save="1"/>
                         <field name="quantite_suggeree"/>
                     </list>
                 </field>
