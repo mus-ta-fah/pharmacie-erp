@@ -24,15 +24,9 @@ class WizardReapproAuto(models.TransientModel):
     )
     nb_alertes = fields.Integer(string='Nb médicaments en alerte', readonly=True)
 
-    @api.model_create_multi
-    def create(self, vals_list):
-        records = super().create(vals_list)
-        for record in records:
-            record._charger_alertes()
-        return records
-
-    def _charger_alertes(self):
-        """Scanne automatiquement les médicaments en alerte ou rupture."""
+    @api.model
+    def _get_alertes_vals(self):
+        """Calcule les lignes et le compteur d'alertes de stock, sans écrire en base."""
         meds_en_alerte = self.env['pharmacie.medicament'].search(
             [('alerte_stock', 'in', ['faible', 'rupture'])]
         )
@@ -47,7 +41,46 @@ class WizardReapproAuto(models.TransientModel):
                 'quantite_suggeree': quantite_suggeree,
                 'selectionne': True,
             }))
-        self.write({'ligne_ids': lignes, 'nb_alertes': len(meds_en_alerte)})
+        return lignes, len(meds_en_alerte)
+
+    @api.model
+    def default_get(self, fields_list):
+        # C'est CE hook, et non create(), que le client web appelle pour préremplir
+        # le formulaire "Nouveau" d'un wizard ouvert en target=new : l'ouverture du
+        # dialogue ne déclenche jamais de create() côté serveur (celui-ci n'a lieu
+        # qu'à la sauvegarde effective, ex. au clic sur un bouton type="object").
+        # L'ancienne version ne remplissait ligne_ids/nb_alertes que dans create(),
+        # donc le wizard s'ouvrait toujours avec "0 médicaments en alerte".
+        vals = super().default_get(fields_list)
+        if 'ligne_ids' in fields_list or 'nb_alertes' in fields_list:
+            lignes, nb = self._get_alertes_vals()
+            if 'ligne_ids' in fields_list:
+                vals['ligne_ids'] = lignes
+            if 'nb_alertes' in fields_list:
+                vals['nb_alertes'] = nb
+        return vals
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        for record in records:
+            # NOTE : ne pas se fier aux vals_list reçus en argument pour décider
+            # s'il faut recharger les alertes. L'ORM remplit automatiquement tout
+            # champ absent de vals via default_get() avant l'insertion (voir
+            # _add_missing_default_values) — donc même un vals={} arrive ici avec
+            # ligne_ids déjà peuplé par default_get(). Se baser sur vals_list
+            # provoquait un doublon (8 lignes au lieu de 4). On vérifie donc
+            # l'état réel du record déjà créé.
+            if not record.ligne_ids:
+                record._charger_alertes()
+        return records
+
+    def _charger_alertes(self):
+        """Scanne automatiquement les médicaments en alerte ou rupture et les
+        écrit sur le wizard (utilisé pour une création programmatique directe,
+        hors flux normal du client web qui passe par default_get())."""
+        lignes, nb = self._get_alertes_vals()
+        self.write({'ligne_ids': lignes, 'nb_alertes': nb})
 
     def action_generer_bons(self):
         """Génère un bon de commande par fournisseur."""
@@ -87,6 +120,6 @@ class WizardReapproAuto(models.TransientModel):
             'type': 'ir.actions.act_window',
             'name': 'Bons de commande générés',
             'res_model': 'pharmacie.reappro',
-            'view_mode': 'tree,form',
+            'view_mode': 'list,form',
             'domain': [('id', 'in', bons_crees.ids)],
         }
